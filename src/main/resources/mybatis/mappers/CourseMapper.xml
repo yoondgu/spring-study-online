@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="kr.co.hta.mapper.CourseMapper">
+
+	<!-- void insertCourse(Course course); -->
+	<insert id="insertCourse" parameterType="Course">
+		<selectKey keyProperty="no" resultType="int" order="BEFORE">
+			select online_course_seq.nextval
+			from dual
+		</selectKey>
+		insert into online_courses
+		(course_no, course_title, course_grade, course_description, course_price,
+		course_period, course_certificate_completion, user_id, course_imagename)
+		values
+		(#{no}, #{title}, #{grade}, #{description}, #{price},
+		 #{period}, #{certificateCompletion}, #{user.id},  #{imagename})
+	</insert>
+
+	<!-- void insertCourseCategory(CourseCategory courseCategory); -->
+	<insert id="insertCourseCategory" parameterType="CourseCategory">
+		insert into online_course_categories
+		(course_no, category_id)
+		values
+		(#{courseNo}, #{category.id})
+	</insert>
+
+	<!-- void insertCourseLearning(CourseLearning courseLearning); -->
+	<insert id="insertCourseLearning" parameterType="CourseLearning">
+		insert into online_course_learnings
+		(course_no, course_learning)
+		values
+		(#{courseNo}, #{learning})
+	</insert>
+
+	<!-- void insertCourseRecommendation(CourseRecommendation courseRecommendation); -->
+	<insert id="insertCourseRecommendation" parameterType="CourseRecommendation">
+		insert into online_course_recommendations
+		(course_no, course_recommended_target)
+		values
+		(#{courseNo}, #{target})
+	</insert>
+
+	<!-- void insertCourseTag(CourseTag courseTag); -->
+	<insert id="insertCourseTag" parameterType="CourseTag">
+		insert into online_course_tags
+		(course_no, course_tag)
+		values
+		(#{courseNo}, #{tag})
+	</insert>
+
+
+	<resultMap type="Course" id="CourseResultMap">
+		<id column="course_no" property="no" />
+		<result column="course_title" property="title"/>
+		<result column="course_grade" property="grade" />
+		<result column="course_description" property="description" />
+		<result column="course_price" property="price" />
+		<result column="course_discount_price" property="discountPrice" />
+		<result column="course_period" property="period" />
+		<result column="course_certificate_completion" property="certificateCompletion" />
+		<result column="course_review_count" property="reviewCount" />
+		<result column="course_review_score" property="reviewScore" />
+		<result column="course_student_count" property="studentCount" />
+		<result column="course_disabled" property="disabled" />
+		<result column="course_created_date" property="createdDate" />
+		<result column="course_updated_date" property="updatedDate" />
+		<result column="course_imagename" property="imagename" />
+		<association property="user" column="user_id" select="kr.co.hta.mapper.UserMapper.getUserById"></association>
+	</resultMap>
+	
+	<resultMap type="Course" id="CourseWithCategoriesResultMap" extends="CourseResultMap">
+		<collection property="categories" column="course_no" select="getCourseCategoriesByCourseNo"></collection>
+	</resultMap>
+
+	<!-- List<Course> getCoursesByUserId(String userId); -->
+	<select id="getCoursesByUserId" parameterType="string" resultMap="CourseWithCategoriesResultMap">
+		select *
+		from online_courses
+		where user_id = #{value}
+		order by course_no desc
+	</select>
+	
+	<!-- List<CourseCategory> getCourseCategoriesByCourseNo(int courseNo); -->
+	<select id="getCourseCategoriesByCourseNo" parameterType="int" resultType="CourseCategory">
+		select A.course_no as courseNo,
+		       A.category_id as "category.id",
+		       B.category_name as "category.name"
+		from online_course_categories A, online_categories B
+		where A.course_no = #{value}
+		and A.category_id = B.category_id			
+	</select>
+	
+	<!-- List<CourseLearning> getCourseLearningsByCourseNo(int courseNo); -->
+	<select id="getCourseLearningsByCourseNo" parameterType="int" resultType="CourseLearning">
+		select course_no as courseNo, course_learning as learning
+		from online_course_learnings
+		where course_no = #{value}
+	</select>
+	
+	<!-- List<CourseRecommendation> getCourseRecommendationsByCourseNo(int courseNo); -->
+	<select id="getCourseRecommendationsByCourseNo" parameterType="int" resultType="CourseRecommendation">
+		select course_no as courseNo, course_recommended_target as target
+		from online_course_recommendations
+		where course_no = #{value}
+	</select>
+	
+	<!-- List<CourseTag> getCourseTagsByCourseNo(int courseNo); -->
+	<select id="getCourseTagsByCourseNo" parameterType="int" resultType="CourseTag">
+		select course_no as courseNo, course_tag as tag
+		from online_course_tags
+		where course_no = #{value}
+	</select>
+	
+	<!-- 기본 Course 조회 결과에서 확장해서, categories, learnings, recommendations 정보도 저장할 수 있게 하는 resultMap -->
+	<resultMap type="Course" id="CourseDetailResultMap" extends="CourseResultMap">
+		<collection property="categories" column="course_no" select="getCourseCategoriesByCourseNo"></collection>
+		<collection property="learnings" column="course_no" select="getCourseLearningsByCourseNo"></collection>
+		<collection property="recommendations" column="course_no" select="getCourseRecommendationsByCourseNo"></collection>
+		<collection property="tags" column="course_no" select="getCourseTagsByCourseNo"></collection>
+	</resultMap>
+	
+	<!-- Course getCourseByNo(int no); -->
+	<select id="getCourseByNo" parameterType="int" resultMap="CourseDetailResultMap">
+		select *
+		from online_courses
+		where course_no = #{value}
+	</select>
+
+	<!-- List<Course> getCoursesByCategoryId(String categoryId); -->
+	<select id="getCoursesByCategoryId" resultMap="CourseResultMap">
+		select *
+		from online_courses
+		<if test="categoryId != null">
+			where course_no in (select course_no
+								from online_course_categories
+								where category_id = #{categoryId})
+		</if>
+		order by course_no desc
+	</select>
+	
+	<!-- List<String> getAllTags(); -->
+	<select id="getAllTags" resultType="string">
+		select distinct course_tag
+		from online_course_tags
+	</select>
+	
+	<!-- List<Course> getCoursesByCriteria(CourseCriteria criteria); -->
+	<select id="getCoursesByCriteria" parameterType="kr.co.hta.criteria.CourseCriteria" resultMap="CourseResultMap">
+		select *
+		from online_courses
+		<where>
+			<if test="categoryId != null">
+				course_no in (select course_no
+								from online_course_categories
+								where category_id = #{categoryId})
+			</if>
+			<if test="tags != null">
+				and course_no in (select course_no
+								from online_course_tags
+								where course_tag in
+								<foreach collection="tags" item="tag" open="(" close=")" separator=",">
+									#{tag}
+								</foreach>)
+			</if>
+			<if test="pays != null">
+				and price_type in
+				<foreach collection="pays" item="pay" open="(" close=")" separator=",">
+					#{pay}
+				</foreach>
+			</if>
+			<if test="grades != null">
+				and course_grade in
+				<foreach collection="grades" item="grade" open="(" close=")" separator=",">
+					#{grade}
+				</foreach>
+			</if>
+		</where>
+		<choose>
+			<when test="sort == 'day'">
+				order by course_no desc
+			</when>
+			<when test="sort == 'score'">
+				order by course_review_score desc
+			</when>
+			<when test="sort == 'price'">
+				order by course_price asc
+			</when>
+		</choose>
+	</select>
+</mapper>
