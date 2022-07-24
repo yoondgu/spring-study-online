@@ -114,12 +114,14 @@
 			</if>
 			<if test="tags != null">
 				and course_no in (select course_no
-								from online_course_tags
-								where course_tag in
-								<foreach collection="tags" item="tag" open="(" close=")" separator=",">
-									#{tag}
-								</foreach>
-								)
+								from (select course_no
+									from online_course_tags
+									where course_tag in
+									<foreach collection="tags" item="tag" open="(" close=")" separator="," >
+										#{tag}
+									</foreach>)
+								group by course_no
+								having count(course_no) >= ${tags.size})
 			</if>
 			<if test="pays != null">
 				and price_type in 
