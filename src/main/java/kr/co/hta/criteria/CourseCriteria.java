@@ -11,9 +11,10 @@ import lombok.ToString;
 @ToString
 public class CourseCriteria {
 
-	private String categoryId;
-	private List<String> tags;
-	private List<String> grades;
-	private List<String> pays;
-	private String sort;
+	String categoryId;
+	List<String> tags;
+	List<String> pays;
+	List<String> grades;
+	String sort;
+	
 }
