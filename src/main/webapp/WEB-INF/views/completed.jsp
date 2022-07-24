@@ -17,9 +17,7 @@
         <div class="col">
             <div class="border p-3 bg-light">
                 <h1 class="mb-4">회원가입 완료.</h1>
-                <p class=""><strong>홍길동</strong>님 회원가입이 완료되었습니다.</p>
-                <p class=""><a href="/login" class="btn btn-primary btn-lg">로그인</a> 후 다양한 서비스를 사용해보세요</p>
-                
+                <p class=""><strong>${LOGIN_USER.name }</strong>님 회원가입이 완료되었습니다.</p>
             </div>
         </div>
     </div>

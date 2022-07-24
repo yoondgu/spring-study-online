@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="kr.co.hta.mapper.UserMapper">
-
-	<resultMap type="User" id="UserResultMap">
+	<resultMap type="User" id="userResultMap">
 		<id column="user_id" property="id"/>
 		<result column="user_email" property="email"/>
 		<result column="user_password" property="password"/>
@@ -15,30 +14,30 @@
 		<result column="user_updated_date" property="updatedDate"/>
 	</resultMap>
 
+	<!-- User getUserById(String id); -->
+	<select id="getUserById" parameterType="string" resultMap="userResultMap">
+		select *
+		from online_users
+		where user_id = #{value}
+	</select>
+	
 	<!-- User getUserByEmail(String email); -->
-	<select id="getUserByEmail" parameterType="string" resultMap="UserResultMap">
-		select user_id, user_email, user_password, user_name, user_phone, user_profile_image,
-				user_disabled, user_teacher, user_created_date, user_updated_date
+	<select id="getUserByEmail" parameterType="string" resultMap="userResultMap">
+		select *
 		from online_users
 		where user_email = #{value}
 	</select>
 	
-	<!-- User getUserById(String id); -->
-	<select id="getUserById" parameterType="string" resultMap="UserResultMap">
-		select user_id, user_email, user_password, user_name, user_phone, user_profile_image,
-				user_disabled, user_teacher, user_created_date, user_updated_date
-		from online_users
-		where user_id = #{value}
-	</select>
-
 	<!-- void insertUser(User user); -->
 	<insert id="insertUser" parameterType="User">
-		insert into online_users (user_id, user_email, user_password, user_name, user_phone, user_profile_image)
-		values (#{id}, #{email}, #{password}, #{name}, #{phone}, #{profileImage})
+		insert into online_users
+		(user_id, user_email, user_password, user_name, user_phone, user_profile_image)
+		values
+		(#{id}, #{email}, #{password}, #{name}, #{phone}, #{profileImage})
 	</insert>
-
+	
 	<!-- void updateUser(User user); -->
-	<update id="updateUser" parameterType="kr.co.hta.vo.User">
+	<update id="updateUser" parameterType="User">
 		update online_users
 		set
 			user_password = #{password},
@@ -48,7 +47,6 @@
 			user_disabled = #{disabled},
 			user_teacher = #{teacher},
 			user_updated_date = sysdate
-		where user_id = #{id}
+		where user_no = #{no}
 	</update>
-
 </mapper>

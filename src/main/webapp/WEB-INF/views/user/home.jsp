@@ -15,6 +15,13 @@
 <c:set var="menu" value="dashboard"/>
 <%@ include file="../common/nav.jsp" %>
 <div class="container my-3">
+	<c:if test="${not empty param.fail }">
+	<div class="row mb-3">
+		<div class="col-12 alert alert-danger">
+			잘못된 요청입니다.
+		</div>
+	</div>
+	</c:if>
 	<div class="row mb-3">
 		<div class="col-2">
 			<div class="list-group">
